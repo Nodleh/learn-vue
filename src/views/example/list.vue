@@ -120,7 +120,7 @@ export default {
             },
       list: null,
       nlist: {},
-      total: 0,
+      total: 100,
       listLoading: true,
       listQuery: {
         index: 1,
@@ -136,7 +136,7 @@ export default {
       this.listLoading = true;
       fetchList(this.listQuery).then((response) => {
         this.list = response.data;
-         this.total = this.list.length;
+        //this.total = this.list.length;
         console.log(this.total);
         this.listLoading = false;
         console.log(this.list)
