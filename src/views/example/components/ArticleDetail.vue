@@ -55,13 +55,8 @@
 
                 <el-col :span="6">
                   <el-form-item label-width="90px" label="Importance:" class="postInfo-container-item">
-                    <el-rate
+                    <el-input
                       v-model="postForm.weight"
-                      :max="3"
-                      :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-                      :low-threshold="1"
-                      :high-threshold="3"
-                      style="display:inline-block"
                     />
                   </el-form-item>
                 </el-col>

@@ -16,7 +16,8 @@
             </div>
     <el-table
       v-loading="listLoading"
-      :data="list"
+      :data="list.slice((current_page-1)*page_size,current_page*page_size)"
+      @sort-change="sortChange"
       border
       fit
       highlight-current-row
@@ -49,23 +50,18 @@
 
       <el-table-column width="100px" label="权重">
         <template slot-scope="scope">
-          <svg-icon
-            v-for="n in +scope.row.weight"
-            :key="n"
-            icon-class="star"
-            class="meta-item__icon"
-          />
+          <span>{{ scope.row.weight }}</span>
         </template>
       </el-table-column>
 
       <el-table-column class-name="status-col" label="Status" width="110">
         <template slot-scope="{ row }">
-          <el-tag :type="row.status | statusFilter">
+          <el-tag :type="row.active | statusFilter">
             {{ row.active }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column width="180px" align="center" label="发布时间">
+      <el-table-column width="180px" align="center" label="发布时间" prop="row.createdAt" sortable='custom'>
         <template slot-scope="scope">
           <span>{{
             scope.row.createdAt | parseTime("{y}-{m}-{d} {h}:{i}")
@@ -99,17 +95,17 @@
 import { fetchList,queryArticle,deleteArticle} from "@/api/article";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 import qs from 'qs';
+
 export default {
   name: "ArticleList",
   components: { Pagination },
   filters: {
-    statusFilter(status) {
+    statusFilter(active) {
       const statusMap = {
-        published: "success",
-        draft: "info",
-        deleted: "danger",
+          '已激活': 'success',
+          '未激活': 'danger'
       };
-      return statusMap[status];
+      return statusMap[active];
     },
   },
   data() {
@@ -120,11 +116,18 @@ export default {
             },
       list: null,
       nlist: {},
-      total: 100,
+      total: 0,
       listLoading: true,
       listQuery: {
         index: 1,
-        max: 10,
+        max: 80,
+      },
+      current_page: 0,
+      total_pages: 0,
+      page_size:0,
+      column:{
+        prop: 'row.createdAt',
+        order: 'descending',
       },
     };
   },
@@ -132,17 +135,39 @@ export default {
     this.getList();
   },
   methods: {
+    
+    
     getList() {
       this.listLoading = true;
       fetchList(this.listQuery).then((response) => {
-        this.list = response.data;
-        //this.total = this.list.length;
+        this.list = response.data.list;
+        for(let n of this.list){
+              if(n.active == 1){
+                  n.active = '已激活'
+              }
+              else{ 
+                  n.active = '未激活'
+              }
+        }
+        this.total = response.data.totalCount;
+        this.page_size = this.list.length;
+        this.total_pages = response.data.totalPages;
+        this.current_page = response.data.currentPage;
         console.log(this.total);
         this.listLoading = false;
-        console.log(this.list)
+        console.log(this.list);
       });
     },
-    
+    //sort
+    sortChange(column){
+        this.current_page = 1;
+        console.log(column.order);
+        if(column.order == 'descending'){
+          this.list.sort((a,b)=> b[this.column.prop]-a[this.column.prop])
+        }else if(column.order == 'ascending'){
+          this.list.sort((a,b)=> a[this.column.prop]-b[this.column.prop])
+        }
+    },
     //delete
     handleDelete(id) {
       this.$confirm('确定要删除吗?','提示',{
