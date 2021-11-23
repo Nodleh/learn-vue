@@ -16,7 +16,7 @@
             </div>
     <el-table
       v-loading="listLoading"
-      :data="list.slice((current_page-1)*page_size,current_page*page_size)"
+      :data="list.slice((current_page-1)*total_pages,current_page*total_pages)"
       @sort-change="sortChange"
       border
       fit
