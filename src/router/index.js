@@ -102,10 +102,10 @@ export const asyncRoutes = [
     // tableRouter,
 
     {
-        path: '/example',
+        path: '/article',
         component: Layout,
-        redirect: '/example/list',
-        name: 'Example',
+        redirect: '/article/list',
+        name: 'Article',
         meta: {
             title: '新闻咨询',
             icon: 'el-icon-s-help'
@@ -113,14 +113,15 @@ export const asyncRoutes = [
         children: [{
                 path: 'create',
                 component: () =>
-                    import ('@/views/example/create'),
+                    import ('@/views/article/create'),
                 name: 'CreateArticle',
-                meta: { title: '新增', icon: 'edit' }
+                meta: { title: '新增', icon: 'edit' },
+                hidden: true
             },
             {
                 path: 'edit/:id(\\d+)',
                 component: () =>
-                    import ('@/views/example/edit'),
+                    import ('@/views/article/edit'),
                 name: 'EditArticle',
                 meta: { title: 'Edit Article', noCache: true, activeMenu: '/example/list' },
                 hidden: true
@@ -128,13 +129,55 @@ export const asyncRoutes = [
             {
                 path: 'list',
                 component: () =>
-                    import ('@/views/example/list'),
+                    import ('@/views/article/list'),
                 name: 'ArticleList',
                 meta: { title: '新闻列表', icon: 'list' }
             }
         ]
     },
+    {
+        path: '/tab',
+        component: Layout,
+        redirect: '/tab/in',
+        name: 'tab',
+        meta: {
+            title: '账单咨询',
+            icon: 'el-icon-s-help'
+        },
+        children: [{
+                path: 'in',
+                component: () =>
+                    import ('@/views/tab/in'),
+                name: 'in',
+                meta: { title: '收入', icon: 'tab' }
+            },
+            {
+                path: 'out',
+                component: () =>
+                    import ('@/views/tab/out'),
+                name: 'out',
+                meta: { title: '支出', icon: 'list' }
+            },
+            {
+                path: 'create',
+                component: () =>
+                    import ('@/views/tab/create'),
+                name: 'CreateArticle',
+                meta: { title: '新增', icon: 'edit' },
+                hidden: true
 
+            },
+            {
+                path: 'edit/:id(\\d+)',
+                component: () =>
+                    import ('@/views/tab/edit'),
+                name: 'EditArticle',
+                meta: { title: 'Edit Article', noCache: true, activeMenu: '/tab/in' },
+                hidden: true
+            },
+
+        ]
+    },
 
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }

@@ -3,9 +3,9 @@
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
       <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
-        <CommentDropdown v-model="postForm.comment_disabled" />
+        <!-- <CommentDropdown v-model="postForm.comment_disabled" />
         <PlatformDropdown v-model="postForm.platforms" />
-        <SourceUrlDropdown v-model="postForm.source_uri" />
+        <SourceUrlDropdown v-model="postForm.source_uri" /> -->
         <el-button v-loading="loading" style="margin-left: 10px;" type="success" 
         @click="submitForm"
         >
@@ -18,12 +18,12 @@
 
       <div class="createPost-main-container">
         <el-row>
-          <Warning />
+          <!-- <Warning /> -->
 
           <el-col :span="24">
             <el-form-item style="margin-bottom: 40px;" prop="title">
               <MDinput v-model="postForm.title" :maxlength="100" name="name" required>
-                Title
+                标题
               </MDinput>
             </el-form-item>
 
@@ -31,46 +31,47 @@
               <el-row>
                 
                 <el-col :span="8">
-                  <el-form-item label-width="60px" label="Type:" class="postInfo-container-item" >
-                     <el-input v-model="postForm.articleType"  placeholder="Type"></el-input>
+                  <el-form-item label-width="60px" label="类型:" class="postInfo-container-item" >
+                     <el-input v-model="postForm.articleType"  placeholder="类型"></el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
-                  <el-form-item label-width="60px" label="Source:" class="postInfo-container-item"
+                  <el-form-item label-width="60px" label="来源:" class="postInfo-container-item"
+                  prop="source"
                    >
-                    <el-input v-model="postForm.source"   placeholder="Source"></el-input>
+                    <el-input v-model="postForm.source"   placeholder="来源"></el-input>
                   </el-form-item>
                 </el-col>
-                
-                <el-col :span="10">
-                  <el-form-item label-width="60px" label="SourceUrl:" class="postInfo-container-item">
-                    <el-input v-model="postForm.sourceUrl"  placeholder="SourceUrl"></el-input>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="10">
-                  <el-form-item label-width="120px" label="Publish Time:" class="postInfo-container-item">
-                    <el-date-picker v-model="displayTime" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="Select date and time" />
-                  </el-form-item>
-                </el-col>
-
-                <el-col :span="6">
-                  <el-form-item label-width="90px" label="Importance:" class="postInfo-container-item">
-                    <el-input
+                <el-col :span="8">
+                  <el-form-item label-width="60px" label="权重:" class="postInfo-container-item">
+                    <el-input placeholder="权重"
                       v-model="postForm.weight"
                     />
                   </el-form-item>
                 </el-col>
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="来源Url:" class="postInfo-container-item" prop="sourceUrl">
+                    <el-input v-model="postForm.sourceUrl"  placeholder="来源Url"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="8">
+                  <el-form-item label-width="80px" label="开始时间:" class="postInfo-container-item">
+                    <el-date-picker v-model="displayTime" type="datetime" format="yyyy-MM-dd HH:mm:ss" placeholder="选择日期和时间" />
+                  </el-form-item>
+                </el-col>
+
+                
               </el-row>
             </div>
           </el-col>
         </el-row>
 
-        <el-form-item style="margin-bottom: 40px;" label-width="70px" label="Summary:">
-          <el-input v-model="postForm.keyword" :rows="1" type="textarea" class="article-textarea" autosize placeholder="Please enter the content" />
+        <el-form-item style="margin-bottom: 40px;" label-width="70px" label="关键字:" prop="keyword">
+          <el-input v-model="postForm.keyword" :rows="1" type="textarea" class="article-textarea" autosize placeholder="请输入内容" />
           <span v-show="contentShortLength" class="word-counter">{{ contentShortLength }}words</span>
         </el-form-item>
 
-        <el-form-item prop="content" style="margin-bottom: 30px;">
+        <el-form-item prop="body" style="margin-bottom: 30px;">
           <Tinymce ref="editor" v-model="postForm.body" :height="400" />
         </el-form-item>
 
@@ -95,7 +96,6 @@ import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown
 import qs from 'qs'
 
 const defaultForm = {
-  status: 'draft',
   title: '', // 文章题目
   body: '', // 文章内容
   keyword: '', // 文章摘要
@@ -133,21 +133,6 @@ export default {
         callback()
       }
     }
-    const validateSourceUri = (rule, value, callback) => {
-      if (value) {
-        if (validURL(value)) {
-          callback()
-        } else {
-          this.$message({
-            message: '外链url填写不正确',
-            type: 'error'
-          })
-          callback(new Error('外链url填写不正确'))
-        }
-      } else {
-        callback()
-      }
-    }
     return {
       postForm: Object.assign({}, defaultForm),
       loading: false,
@@ -155,8 +140,10 @@ export default {
       rules: {
         imgUrl: [{ validator: validateRequire }],
         title: [{ validator: validateRequire }],
+        source: [{ validator: validateRequire }],
+        keyword: [{ validator: validateRequire }],
         body: [{ validator: validateRequire }],
-        sourceUrl: [{ validator: validateSourceUri, trigger: 'blur' }]
+        sourceUrl: [{ validator: validateRequire }]
       },
       tempRoute: {}
     }

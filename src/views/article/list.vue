@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="handle-box">
-      <router-link :to="'/example/create/' ">
+      <router-link :to="'/article/create/' ">
                 <el-button
                     type="primary"
                     icon="el-icon-plus"
@@ -16,8 +16,7 @@
             </div>
     <el-table
       v-loading="listLoading"
-      :data="list.slice((current_page-1)*total_pages,current_page*total_pages)"
-      @sort-change="sortChange"
+      :data="list"
       border
       fit
       highlight-current-row
@@ -61,7 +60,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column width="180px" align="center" label="发布时间" prop="row.createdAt" sortable='custom'>
+      <el-table-column width="180px" align="center" label="发布时间">
         <template slot-scope="scope">
           <span>{{
             scope.row.createdAt | parseTime("{y}-{m}-{d} {h}:{i}")
@@ -71,7 +70,7 @@
 
       <el-table-column align="center" label="操作" width="120">
         <template slot-scope="scope">
-          <router-link :to="'/example/edit/' + scope.row.id">
+          <router-link :to="'/article/edit/' + scope.row.id">
             <el-button type="primary" size="small" icon="el-icon-edit">
               编辑
             </el-button>
@@ -120,15 +119,12 @@ export default {
       listLoading: true,
       listQuery: {
         index: 1,
-        max: 80,
+        max: 10,
       },
       current_page: 0,
       total_pages: 0,
       page_size:0,
-      column:{
-        prop: 'row.createdAt',
-        order: 'descending',
-      },
+
     };
   },
   created() {
@@ -152,6 +148,7 @@ export default {
         this.total = response.data.totalCount;
         this.page_size = this.list.length;
         this.total_pages = response.data.totalPages;
+        console.log(this.total_pages);
         this.current_page = response.data.currentPage;
         console.log(this.total);
         this.listLoading = false;
