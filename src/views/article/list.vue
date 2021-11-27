@@ -68,7 +68,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" label="操作" width="120">
+      <el-table-column align="center" label="操作" width="250">
         <template slot-scope="scope">
           <router-link :to="'/article/edit/' + scope.row.id">
             <el-button type="primary" size="small" icon="el-icon-edit">
@@ -196,11 +196,23 @@ export default {
       this.listLoading = true;
       queryArticle(keyword,index,max).then((response) => {
   
-       this.list = response.data;
-       
-      
-        this.listLoading = false;
-        console.log(this.list)
+       _this.list = response.data.list;
+        for(let n of _this.list){
+              if(n.active == 1){
+                  n.active = '已激活'
+              }
+              else{ 
+                  n.active = '未激活'
+              }
+        }
+       console.log(_this.list)
+       _this.total = response.data.totalCount;
+        _this.page_size = _this.list.length;
+        _this.total_pages = response.data.totalPages;
+        console.log(_this.total_pages);
+        _this.current_page = response.data.currentPage;
+        _this.listLoading = false;
+        
         
         
       });

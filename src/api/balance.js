@@ -8,7 +8,7 @@ export function queryById(id) {
 }
 export function queryByDate(index, max, date) {
     return request({
-        url: '/balance/in/list',
+        url: '/balance/sum/list',
         method: 'get',
         params: { index, max, date }
     })
@@ -45,4 +45,18 @@ export function deleteBalance(id) {
 
     })
 
+}
+export function getSum(date) {
+    return request({
+        url: '/balance/in',
+        method: 'get',
+        params: { date }
+    })
+}
+export function getOut(date) {
+    return request({
+        url: '/balance/out',
+        method: 'get',
+        params: { date }
+    })
 }

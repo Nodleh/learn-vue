@@ -1,20 +1,24 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="query.id" placeholder="id" style="width: 100px;" class="filter-item" icon="el-icon-more" @keyup.enter.native="handleFilter" />
+      <el-input v-model="query.id" placeholder="id" style="width: 100px;" class="filter-item"  @keyup.enter.native="handleFilter" />
       <el-date-picker style="width: 200px; margin-left: 10px; margin-top: 10px;"
       v-model="value1"
       type="date"
+      value-format="yyyy-MM-dd"
       placeholder="选择日期"></el-date-picker>
     
       <el-button v-waves class="filter-item"  style="margin-left: 10px;"  type="primary" icon="el-icon-search" @click="by_id?search_id():search_date()">
         Search
       </el-button>
-       <router-link :to="'/tab/create/' ">
-          <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" >
+       <!-- <router-link :to="'/tab/create/' "> -->
+          <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click = "add()">
                 Add
           </el-button>
-       </router-link>
+            <el-dialog title="新增" :visible.sync="dialogTableVisible2" center :append-to-body='true' :lock-scroll="false" width="30%">
+               <create ></create>
+             </el-dialog>
+       <!-- </router-link> -->
       <el-button v-waves :loading="downloadLoading" style="margin-left: 10px;"  class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         Export
       </el-button>
@@ -40,10 +44,10 @@
       </el-table-column>
       <el-table-column label="创建日期" width="150px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.date | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ row.date | parseTime('{y}-{m}-{d} ') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="项目名称" min-width="100px">
+      <el-table-column label="项目名称" min-width="20px">
         <template slot-scope="{row}">
           <span>{{ row.projectName }}</span>
         </template>
@@ -65,21 +69,28 @@
       </el-table-column>
       <el-table-column label="类型" width="110px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.balanceType }}</span>
+          <el-tag :type="row.balanceType | statusFilter">{{ row.balanceType }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="120">
+      <el-table-column align="center" label="操作" width="250">
         <template slot-scope="scope">
-          <router-link :to="'/tab/edit/' + scope.row.id">
-            <el-button type="primary" size="small" icon="el-icon-edit">
+          <!-- <router-link :to="'/tab/edit/' + scope.row.id"> -->
+            <el-button type="primary" size="small" icon="el-icon-edit" @click="edit()">
               编辑
             </el-button>
-          </router-link>
+            
+             <el-dialog  title="编辑" :visible.sync="dialogTableVisible1" center :append-to-body='true' :lock-scroll="false" width="30%">
+               <edit :f_id="scope.row.id"></edit>
+             </el-dialog>
+            
+          <!-- </router-link> -->
           <el-button size="small" icon="el-icon-delete" @click="handleDelete(scope.row.id)" > 删除 </el-button>
         </template>
       </el-table-column>
     </el-table>
-
+    
+    <p v-show="compute">总收入:{{total_in}}</p>
+    <p v-show="compute">总支出:{{total_out}}</p>
     
     
   </div>
@@ -87,11 +98,12 @@
 
 <script>
 import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-import { queryById,queryByDate,deleteBalance } from '@/api/balance'
+import { queryById,queryByDate,deleteBalance,getSum,getOut } from '@/api/balance'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
+import edit from './edit'
+import create from './create'
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
   { key: 'US', display_name: 'USA' },
@@ -107,20 +119,16 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination },
+  components: { Pagination,edit,create },
   directives: { waves },
   filters: {
-    statusFilter(status) {
+    statusFilter(active) {
       const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
+          '收入': 'success',
+          '支出': 'danger'
+      };
+      return statusMap[active];
     },
-    typeFilter(type) {
-      return calendarTypeKeyValue[type]
-    }
   },
   data() {
     return {
@@ -136,7 +144,15 @@ export default {
       query:{
         id: null,
       },
+      total_in: 0,
+      total_out: 0,
+      f_id:0,
+      
+      compute:false,
       value1:undefined,
+      dialogTableVisible1:false,
+       dialogTableVisible2:false,
+       
       importanceOptions: [1, 2, 3],
       calendarTypeOptions,
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
@@ -177,7 +193,10 @@ export default {
         else
          return  false;
 
-      }
+      },
+      
+     
+
   },
   methods: {
     getList() {
@@ -192,13 +211,34 @@ export default {
         }, 1.5 * 1000)
       })
     },
+    add(){
+       this.dialogTableVisible2 = true;
+    },
+    edit(){
+       this.dialogTableVisible1 = true; 
+       this.dialog = false;
+    },
     search_id() {
       this.listLoading = true
       console.log(this.query.id)
       queryById(this.query.id).then(response => {
         this.list = [];
          this.list.push(response.data);
-         console.log(this.list);
+         console.log(this.list[0].projectName);
+         if(this.list[0].balanceType == 1){
+            this.list[0].balanceType = '收入'
+          }
+          else{ 
+                 this.list[0].balanceType = '支出'
+          }
+         if(this.list.length == 0){
+           
+           this.$message({
+             message: '未查询到指定Id的账单',
+             type: 'error'
+
+           })
+         }
          this.listLoading = false
       })
     },
@@ -207,19 +247,36 @@ export default {
        const index = _this.listQuery.index;
        const max = _this.listQuery.max;
        const date = this.value1;
-       this.listLoading = true
+       _this.compute = true;
+       _this.listLoading = true;
+       _this.total_in = 0;
+       _this.total_out = 0;
        queryByDate(index,max,date).then(response=>{
-         this.list = response.data.list;
-         if(this.list.length == 0){
+         _this.list = response.data.list;
+         for(let n of _this.list){
+              if(n.balanceType == 1){
+                  n.balanceType = '收入'
+              }
+              else{ 
+                  n.balanceType = '支出'
+              }
+        }
+        getSum(date).then(response=>{
+          _this.total_in = response.data
+        })
+        getOut(date).then(response=>{
+          _this.total_out = response.data
+        })
+         if(_this.list.length == 0){
            
-           this.$message({
+           _this.$message({
              message: '未查询到指定日期的账单',
              type: 'error'
 
            })
          }
-         console.log(this.list);
-         this.listLoading = false
+         console.log(_this.list);
+         _this.listLoading = false
        })
     },
     handleModifyStatus(row, status) {

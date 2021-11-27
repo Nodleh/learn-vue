@@ -1,20 +1,9 @@
 <template>
+  
   <div class="createPost-container">
     <el-form ref="postForm" :model="postForm" :rules="rules" class="form-container">
 
-      <sticky :z-index="10" :class-name="'sub-navbar '+postForm.status">
-        <!-- <CommentDropdown v-model="postForm.comment_disabled" />
-        <PlatformDropdown v-model="postForm.platforms" />
-        <SourceUrlDropdown v-model="postForm.source_uri" /> -->
-        <el-button v-loading="loading" style="margin-left: 10px;" type="success" 
-        @click="submitForm()"
-        >
-          Publish
-        </el-button>
-        <el-button v-loading="loading" type="warning" @click="draftForm">
-          Draft
-        </el-button>
-      </sticky>
+     
 
       <div class="createPost-main-container">
         <el-row>
@@ -27,12 +16,12 @@
                 <el-row>
                 <el-col :span="8">
                   <el-form-item label-width="90px" label="日期:" class="postInfo-container-item" prop="date" >
-                    <el-date-picker v-model="postForm.date" type="date" format="yyyy-MM-dd " placeholder="选择日期" />
+                    <el-date-picker v-model="postForm.date" type="date" value-format="yyyy-MM-dd " placeholder="选择日期" />
                   </el-form-item>
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="8" v-show="!isEdit">
+                <el-col :span="24" v-show="!isEdit">
                   <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectId">
                      <el-select v-model="postForm.projectId">
                         <el-option v-for="(item, index) in options"
@@ -45,30 +34,30 @@
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="8" v-show="isEdit">
+                <el-col :span="24" v-show="isEdit">
                   <el-form-item label-width="90px" label="项目Id:" class="postInfo-container-item" >
                      <el-input v-model="postForm.projectName"   placeholder="项目"></el-input>
                   </el-form-item>
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="8">
-                  <el-form-item label-width="90px" label="收入:" class="postInfo-container-item"
+                <el-col :span="24">
+                  <el-form-item label-width="90px" label="收入/支出:" class="postInfo-container-item"
                   prop="revenue"
                    >
-                    <el-input v-model="postForm.revenue"   placeholder="收入"></el-input>
+                    <el-input v-model="postForm.revenue"   placeholder="收入/支出"></el-input>
                   </el-form-item>
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="8">
+                <el-col :span="24">
                   <el-form-item label-width="90px" label="负责人:" class="postInfo-container-item" prop="master">
                     <el-input v-model="postForm.master"  placeholder="负责人"></el-input>
                   </el-form-item>
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="8">
+                <el-col :span="24">
                   <el-form-item label-width="90px" label="备注:" class="postInfo-container-item">
                     <el-input
                       v-model="postForm.note"
@@ -76,11 +65,35 @@
                   </el-form-item>
                 </el-col>
                 </el-row>
+               <el-row>
+                <el-col :span="24" v-show="!isEdit">
+                  <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" prop="balanceType">
+                     <el-select v-model="postForm.balanceType">
+                        <el-option v-for="(item, index) in type"
+                              :key="index"
+                              :value="item.value"
+                              :label="item.label">
+                        </el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                </el-row>
+                <el-row>
+                <el-col :span="24" v-show="isEdit">
+                  <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" >
+                     <el-input v-model="postForm.balanceType"   placeholder="类型"></el-input>
+                  </el-form-item>
+                </el-col>
+                </el-row>
               </el-row>
             </div>
           </el-col>
         </el-row>
-
+        <el-button v-loading="loading" style="margin-left: 10px;" type="success" 
+        @click="submitForm()"
+        >
+          提交
+        </el-button>
         
       </div>
     </el-form>
@@ -93,7 +106,6 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { fetchArticle,createArticle } from '@/api/article'
 import { createBalance,fetchBalance } from '@/api/balance'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
@@ -118,7 +130,12 @@ export default {
     isEdit: {
       type: Boolean,
       default: false
+    },
+    f_id:{
+      type: Number,
+      default: 0
     }
+    
   },
   data() {
     const validateRequire = (rule, value, callback) => {
@@ -158,6 +175,16 @@ export default {
         master: [{ validator: validateRequire }]
       },
       tempRoute: {},
+      type:[{
+        label: '收入',
+        value: 1
+
+      },
+      {
+        label: '支出',
+        value: 0
+      }
+      ],
       options:[{ 
             label: '销货收入',
             value: 1
@@ -224,11 +251,13 @@ export default {
       set(val) {
         this.postForm.display_time = new Date(val)
       }
-    }
+    },
+    
   },
   created() {
     if (this.isEdit) {
-      const id = this.$route.params && this.$route.params.id
+      const id = this.f_id;
+      console.log(id+" created");
       this.fetchData(id)
     }
 
@@ -325,7 +354,7 @@ export default {
   position: relative;
  
   .createPost-main-container {
-    padding: 100px 100px 300px 400px;
+    padding: 50px 50px 50px 50px;
 
     .postInfo-container {
       position: relative;

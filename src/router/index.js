@@ -149,15 +149,9 @@ export const asyncRoutes = [
                 component: () =>
                     import ('@/views/tab/in'),
                 name: 'in',
-                meta: { title: '收入', icon: 'tab' }
+                meta: { title: '账单', icon: 'tab' }
             },
-            {
-                path: 'out',
-                component: () =>
-                    import ('@/views/tab/out'),
-                name: 'out',
-                meta: { title: '支出', icon: 'list' }
-            },
+
             {
                 path: 'create',
                 component: () =>

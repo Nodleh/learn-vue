@@ -73,6 +73,6 @@ export function uppercaseFirst(string) {
  * @param {String} string
  */
 export function statusFilter(string) {
-    const statusMap = ['0', '1']
+    const statusMap = ['否', '是']
     return statusMap[string]
 }
