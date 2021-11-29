@@ -20,6 +20,13 @@ export function createBalance(data) {
         data
     })
 }
+export function updateBalance(data) {
+    return request({
+        url: '/balance/update',
+        method: 'post',
+        data
+    })
+}
 export function fetchBalance(id) {
     return request({
         url: '/balance/query',

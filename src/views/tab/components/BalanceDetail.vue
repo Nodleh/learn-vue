@@ -21,9 +21,9 @@
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="24" v-show="!isEdit">
+                <el-col :span="24"  >
                   <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectId">
-                     <el-select v-model="postForm.projectId">
+                     <el-select v-model="postForm.projectId" placeholder="请选择项目名称">
                         <el-option v-for="(item, index) in options"
                               :key="index"
                               :value="item.value"
@@ -34,11 +34,17 @@
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="24" v-show="isEdit">
-                  <el-form-item label-width="90px" label="项目Id:" class="postInfo-container-item" >
-                     <el-input v-model="postForm.projectName"   placeholder="项目"></el-input>
+                <!-- <el-col :span="24" v-show="isEdit">
+                  <el-form-item label-width="90px" label="项目Id:" class="postInfo-container-item"  >
+                     <el-select v-model="postForm.projectName"  @change="change">
+                        <el-option v-for="(item, index) in options"
+                              :key="index"
+                              :value="item.value"
+                              :label="item.label">
+                        </el-option>
+                    </el-select>
                   </el-form-item>
-                </el-col>
+                </el-col> -->
                 </el-row>
                 <el-row>
                 <el-col :span="24">
@@ -89,10 +95,17 @@
             </div>
           </el-col>
         </el-row>
-        <el-button v-loading="loading" style="margin-left: 10px;" type="success" 
+        <el-button v-loading="loading" style="margin-left: 140px;" type="success" 
         @click="submitForm()"
+        v-show="!isEdit"
         >
-          提交
+          添加
+        </el-button>
+        <el-button v-loading="loading" style="margin-left: 140px;" type="success" 
+        @click="updateForm"
+        v-show="isEdit"
+        >
+          更改
         </el-button>
         
       </div>
@@ -106,7 +119,7 @@ import Upload from '@/components/Upload/SingleImage3'
 import MDinput from '@/components/MDinput'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import { validURL } from '@/utils/validate'
-import { createBalance,fetchBalance } from '@/api/balance'
+import { createBalance,fetchBalance,updateBalance } from '@/api/balance'
 import { searchUser } from '@/api/remote-search'
 import Warning from './Warning'
 import { CommentDropdown, PlatformDropdown, SourceUrlDropdown } from './Dropdown'
@@ -119,8 +132,8 @@ const defaultForm = {
   note: '',
   master:'',
   balanceType: 0,
-  projectName:''
- 
+  id: null,
+  projectName: ''
 }
 
 export default {
@@ -136,6 +149,13 @@ export default {
       default: 0
     }
     
+  },
+  watch:{
+    f_id(newValue,oldValue){
+      if(newValue !== oldValue)
+        this.fetchData(newValue)
+    }
+
   },
   data() {
     const validateRequire = (rule, value, callback) => {
@@ -170,7 +190,7 @@ export default {
       userListOptions: [],
       rules: {
         date: [{ validator: validateRequire }],
-        projectId: [{ validator: validateRequire }],
+        //projectId: [{ validator: validateRequire }],
         revenue: [{ validator: validateRequire }],
         master: [{ validator: validateRequire }]
       },
@@ -267,6 +287,18 @@ export default {
     this.tempRoute = Object.assign({}, this.$route)
   },
   methods: {
+    change(v_id){
+      let obj = {};
+    obj = this.options.find((item)=>{ 
+       return item.value === v_id;//筛选出匹配数据
+     });
+     console.log(obj); //obj即是选中的Option数据集合
+     //获取到选中的Option数据集并进行其它操作
+     
+       this.postForm.projectId = obj.value;
+       console.log("change")
+       //console.log(this.postForm.projectId )
+    },
     fetchData(id) {
       fetchBalance(id).then(response => {
         this.postForm = response.data
@@ -311,7 +343,41 @@ export default {
             type: 'success',
             duration: 2000
           })
-          this.postForm.status = 'published'
+          
+          this.loading = false
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+      
+      
+    },
+    updateForm(f_id) {
+
+      console.log(this.postForm)
+      this.postForm.id = this.f_id
+      console.log(this.postForm.id)
+      console.log(this.postForm.projectId+"hhhh")
+      const postData =qs.stringify(this.postForm) 
+      console.log(postData+"post")
+      updateBalance(postData).then((response) =>{
+        console.log(response.data)
+        console.log(response.list)
+       
+         
+      })
+      console.log("修改请求")
+      this.$refs.postForm.validate(valid => {
+        if (valid) {
+          this.loading = true
+          this.$notify({
+            title: '成功',
+            message: '修改账单成功',
+            type: 'success',
+            duration: 2000
+          })
+          
           this.loading = false
         } else {
           console.log('error submit!!')

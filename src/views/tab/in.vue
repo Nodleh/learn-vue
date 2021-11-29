@@ -75,22 +75,21 @@
       <el-table-column align="center" label="操作" width="250">
         <template slot-scope="scope">
           <!-- <router-link :to="'/tab/edit/' + scope.row.id"> -->
-            <el-button type="primary" size="small" icon="el-icon-edit" @click="edit()">
+            <el-button type="primary" size="small" icon="el-icon-edit" @click="edit(scope.row.id) ">
               编辑
             </el-button>
-            
-             <el-dialog  title="编辑" :visible.sync="dialogTableVisible1" center :append-to-body='true' :lock-scroll="false" width="30%">
-               <edit :f_id="scope.row.id"></edit>
-             </el-dialog>
             
           <!-- </router-link> -->
           <el-button size="small" icon="el-icon-delete" @click="handleDelete(scope.row.id)" > 删除 </el-button>
         </template>
       </el-table-column>
     </el-table>
+    <el-dialog  title="编辑" :visible.sync="dialogTableVisible1" center :append-to-body='true' :lock-scroll="false" width="30%">
+        <edit :f_id="f_id"></edit>
+    </el-dialog>
     
-    <p v-show="compute">总收入:{{total_in}}</p>
-    <p v-show="compute">总支出:{{total_out}}</p>
+    <p v-show="compute && !by_id">总收入:{{total_in}}</p>
+    <p v-show="compute && !by_id">总支出:{{total_out}}</p>
     
     
   </div>
@@ -132,6 +131,7 @@ export default {
   },
   data() {
     return {
+      f_id: null,
       tableKey: 0,
       list: null,
       total: 10,
@@ -146,7 +146,6 @@ export default {
       },
       total_in: 0,
       total_out: 0,
-      f_id:0,
       
       compute:false,
       value1:undefined,
@@ -214,13 +213,15 @@ export default {
     add(){
        this.dialogTableVisible2 = true;
     },
-    edit(){
+    edit(id){
+       this.f_id = id;
        this.dialogTableVisible1 = true; 
-       this.dialog = false;
+       
     },
     search_id() {
       this.listLoading = true
       console.log(this.query.id)
+      
       queryById(this.query.id).then(response => {
         this.list = [];
          this.list.push(response.data);
@@ -267,7 +268,7 @@ export default {
         getOut(date).then(response=>{
           _this.total_out = response.data
         })
-         if(_this.list.length == 0){
+         if(_this.list.length === 0){
            
            _this.$message({
              message: '未查询到指定日期的账单',

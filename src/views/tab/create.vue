@@ -1,5 +1,6 @@
 <template>
   <balance-detail :is-edit="false" />
+  
 </template>
 
 <script>

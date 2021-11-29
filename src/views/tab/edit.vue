@@ -19,7 +19,8 @@ export default {
     id(){
       return this.f_id;
     }
-  }
+  },
+  
   
 }
 </script>
