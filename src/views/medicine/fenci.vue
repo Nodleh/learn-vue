@@ -66,7 +66,7 @@
 
       <el-table-column align="center" label="操作" width="250">
         <template slot-scope="scope">
-          <router-link to="/medicine/news"><el-button>查看相关资讯</el-button></router-link>
+        <el-button @click=" search_news(scope.row)">查看相关资讯</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -164,10 +164,7 @@ export default {
     }
   },
   computed: {
-    by_id() {
-      if (this.query.id && !this.value1) { return true } else { return false }
-    }
-
+   
   },
   created() {
     this.getList()
@@ -192,13 +189,18 @@ export default {
         }, 1.5 * 1000)
       })
     },
-    add() {
-      this.dialogTableVisible2 = true
-    },
-    edit() {
-      this.dialogTableVisible1 = true
-      this.dialog = false
-    },
+   
+   search_news(e)
+   {
+     console.log("查询成功", e.name);
+this.$router.push({
+    path:'/medicine/news',
+    query:{
+      nameId:e.name},
+  })
+
+
+      },
     search_id() {
       this.listLoading = true
       console.log(this.query.id)
@@ -221,41 +223,7 @@ export default {
         this.listLoading = false
       })
     },
-    search_date() {
-      const _this = this
-      const index = _this.listQuery.index
-      const max = _this.listQuery.max
-      const date = this.value1
-      _this.compute = true
-      _this.listLoading = true
-      _this.total_in = 0
-      _this.total_out = 0
-      queryByDate(index, max, date).then(response => {
-        _this.list = response.data.list
-        for (const n of _this.list) {
-          if (n.balanceType == 1) {
-            n.balanceType = '收入'
-          } else {
-            n.balanceType = '支出'
-          }
-        }
-        getSum(date).then(response => {
-          _this.total_in = response.data
-        })
-        getOut(date).then(response => {
-          _this.total_out = response.data
-        })
-        if (_this.list.length == 0) {
-          _this.$message({
-            message: '未查询到指定日期的账单',
-            type: 'error'
-
-          })
-        }
-        console.log(_this.list)
-        _this.listLoading = false
-      })
-    },
+    
     handleModifyStatus(row, status) {
       this.$message({
         message: '操作Success',
