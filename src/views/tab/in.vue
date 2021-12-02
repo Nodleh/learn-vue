@@ -1,30 +1,25 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="query.id" placeholder="id" style="width: 100px;" class="filter-item"  @keyup.enter.native="handleFilter" />
+      <!-- <el-input v-model="query.id" placeholder="id" style="width: 200px; margin-left: 10px; margin-top: 10px;"></el-input> -->
       <el-date-picker style="width: 200px; margin-left: 10px; margin-top: 10px;"
       v-model="value1"
       type="date"
       value-format="yyyy-MM-dd"
       placeholder="选择日期"></el-date-picker>
-    
+      <el-radio v-model="radio" label=1>收入</el-radio>
+      <el-radio v-model="radio" label=2>支出</el-radio>
       <el-button v-waves class="filter-item"  style="margin-left: 10px;"  type="primary" icon="el-icon-search" @click="by_id?search_id():search_date()">
-        Search
+        查询
       </el-button>
        <!-- <router-link :to="'/tab/create/' "> -->
           <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click = "add()">
-                Add
+                添加
           </el-button>
             <el-dialog title="新增" :visible.sync="dialogTableVisible2" center :append-to-body='true' :lock-scroll="false" width="30%">
                <create ></create>
              </el-dialog>
        <!-- </router-link> -->
-      <el-button v-waves :loading="downloadLoading" style="margin-left: 10px;"  class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
     </div>
 
     <el-table
@@ -52,7 +47,17 @@
           <span>{{ row.projectName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="当日收入支出" width="110px" align="center">
+      <el-table-column label="当日收入/支出" width="110px" align="center" v-if="this.display_all">
+        <template slot-scope="{row}">
+          <span>{{ row.revenue }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="当日收入" width="110px" align="center" v-if=" this.display_in">
+        <template slot-scope="{row}">
+          <span>{{ row.revenue }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="当日支出" width="110px" align="center" v-if=" this.display_out">
         <template slot-scope="{row}">
           <span>{{ row.revenue }}</span>
         </template>
@@ -88,33 +93,26 @@
         <edit :f_id="f_id"></edit>
     </el-dialog>
     
-    <p v-show="compute && !by_id">总收入:{{total_in}}</p>
-    <p v-show="compute && !by_id">总支出:{{total_out}}</p>
-    
+    <p v-show="compute && !by_id  && this.display_in">总收入:{{total_in}}</p>
+    <p v-show="compute && !by_id  && this.display_out">总支出:{{total_out}}</p>
+    <pagination
+      v-show="total > 0"
+      :total="total"
+      :page.sync="listQuery.index"
+      :limit.sync="listQuery.max"
+      @pagination="search_date()"
+    />
     
   </div>
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-import { queryById,queryByDate,deleteBalance,getSum,getOut } from '@/api/balance'
+import { queryById,queryByDate,deleteBalance,getSum,getOut,queryInList,queryOutList } from '@/api/balance'
 import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import edit from './edit'
 import create from './create'
-const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
-]
 
-// arr to obj, such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
 
 export default {
   name: 'ComplexTable',
@@ -146,45 +144,22 @@ export default {
       },
       total_in: 0,
       total_out: 0,
-      
+      radio: 0,
+      display_in:false,
+      display_out:false,
+      display_all:true,
       compute:false,
-      value1:undefined,
+      value1:new Date,
       dialogTableVisible1:false,
-       dialogTableVisible2:false,
-       
-      importanceOptions: [1, 2, 3],
-      calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['published', 'draft', 'deleted'],
-      showReviewer: false,
-      temp: {
-        id: 0,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
-      },
-      dialogFormVisible: false,
-      dialogStatus: '',
-      textMap: {
-        update: 'Edit',
-        create: 'Create'
-      },
-      dialogPvVisible: false,
-      pvData: [],
-      rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-      },
+      dialogTableVisible2:false,
       downloadLoading: false
     }
   },
   created() {
-    this.getList()
+    this.search_date()
+    
   },
+  
   computed: {
       by_id(){
         if(this.query.id && !this.value1)
@@ -198,18 +173,6 @@ export default {
 
   },
   methods: {
-    getList() {
-      this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
-      })
-    },
     add(){
        this.dialogTableVisible2 = true;
     },
@@ -220,12 +183,9 @@ export default {
     },
     search_id() {
       this.listLoading = true
-      console.log(this.query.id)
-      
       queryById(this.query.id).then(response => {
         this.list = [];
          this.list.push(response.data);
-         console.log(this.list[0].projectName);
          if(this.list[0].balanceType == 1){
             this.list[0].balanceType = '收入'
           }
@@ -240,7 +200,8 @@ export default {
 
            })
          }
-         this.listLoading = false
+         this.listLoading = false;
+         
       })
     },
     search_date(){
@@ -252,6 +213,48 @@ export default {
        _this.listLoading = true;
        _this.total_in = 0;
        _this.total_out = 0;
+       
+       if(this.radio == 1){
+          getSum(date).then(response=>{
+          _this.total_in = response.data
+        })
+         queryInList(index,max,date).then(response => {
+           
+           _this.list = response.data.list;
+           
+         for(let n of _this.list){
+              n.balanceType = '收入'
+        }
+        this.total = response.data.totalCount;
+        this.total_pages = response.data.totalPages;
+        this.current_page = response.data.currentPage;
+        this.display_in = true;
+        this.display_all = false;
+        _this.listLoading = false;
+       
+        this.radio = 0;
+         })
+       }
+       else if(this.radio == 2){
+         getOut(date).then(response=>{
+          _this.total_out = response.data
+        })
+         queryOutList(index,max,date).then(response => {
+           
+           _this.list = response.data.list;
+         for(let n of _this.list){
+               n.balanceType = '支出'
+        }
+        this.total = response.data.totalCount;
+        this.total_pages = response.data.totalPages;
+        this.current_page = response.data.currentPage;
+        _this.listLoading = false;
+        this.display_out = true;
+        this.display_all = false;
+        this.radio = 0;
+         })
+       }
+       else{
        queryByDate(index,max,date).then(response=>{
          _this.list = response.data.list;
          for(let n of _this.list){
@@ -262,12 +265,11 @@ export default {
                   n.balanceType = '支出'
               }
         }
-        getSum(date).then(response=>{
-          _this.total_in = response.data
-        })
-        getOut(date).then(response=>{
-          _this.total_out = response.data
-        })
+        this.total = response.data.totalCount;
+        this.total_pages = response.data.totalPages;
+        this.current_page = response.data.currentPage;
+        
+        
          if(_this.list.length === 0){
            
            _this.$message({
@@ -279,13 +281,10 @@ export default {
          console.log(_this.list);
          _this.listLoading = false
        })
-    },
-    handleModifyStatus(row, status) {
-      this.$message({
-        message: '操作Success',
-        type: 'success'
-      })
-      row.status = status
+       }
+       this.display_in = false;
+       this.display_out = false;
+       this.display_all = true;
     },
     sortChange(data) {
       const { prop, order } = data
@@ -301,71 +300,8 @@ export default {
       }
       this.handleFilter()
     },
-    resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
-      }
-    },
-    // handleCreate() {
-    //   this.resetTemp()
-    //   this.dialogStatus = 'create'
-    //   this.dialogFormVisible = true
-    //   this.$nextTick(() => {
-    //     this.$refs['dataForm'].clearValidate()
-    //   })
-    // },
-    createData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: 'Success',
-              message: 'Created Successfully',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
-      })
-    },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
-    },
-    updateData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
-      })
-    },
+    
+    
    //delete
     handleDelete(id) {
       console.log(id)
@@ -381,35 +317,8 @@ export default {
       });
       })
       },
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
-      })
-    },
-    handleDownload() {
-      this.downloadLoading = true
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-        const data = this.formatJson(filterVal)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: 'table-list'
-        })
-        this.downloadLoading = false
-      })
-    },
-    formatJson(filterVal) {
-      return this.list.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
-    },
+    
+    
     getSortClass: function(key) {
       const sort = this.listQuery.sort
       return sort === `+${key}` ? 'ascending' : 'descending'

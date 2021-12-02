@@ -33,9 +33,9 @@
                   </el-form-item>
                 </el-col>
                 </el-row>
-                <el-row>
-                <!-- <el-col :span="24" v-show="isEdit">
-                  <el-form-item label-width="90px" label="项目Id:" class="postInfo-container-item"  >
+                <!-- <el-row>
+                <el-col :span="24" v-show="isEdit">
+                  <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item"  >
                      <el-select v-model="postForm.projectName"  @change="change">
                         <el-option v-for="(item, index) in options"
                               :key="index"
@@ -44,8 +44,8 @@
                         </el-option>
                     </el-select>
                   </el-form-item>
-                </el-col> -->
-                </el-row>
+                </el-col>
+                </el-row> -->
                 <el-row>
                 <el-col :span="24">
                   <el-form-item label-width="90px" label="收入/支出:" class="postInfo-container-item"
@@ -72,7 +72,7 @@
                 </el-col>
                 </el-row>
                <el-row>
-                <el-col :span="24" v-show="!isEdit">
+                <el-col :span="24" >
                   <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" prop="balanceType">
                      <el-select v-model="postForm.balanceType">
                         <el-option v-for="(item, index) in type"
@@ -84,13 +84,13 @@
                   </el-form-item>
                 </el-col>
                 </el-row>
-                <el-row>
+                <!-- <el-row>
                 <el-col :span="24" v-show="isEdit">
                   <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" >
                      <el-input v-model="postForm.balanceType"   placeholder="类型"></el-input>
                   </el-form-item>
                 </el-col>
-                </el-row>
+                </el-row> -->
               </el-row>
             </div>
           </el-col>
@@ -102,7 +102,7 @@
           添加
         </el-button>
         <el-button v-loading="loading" style="margin-left: 140px;" type="success" 
-        @click="updateForm"
+        @click="updateForm()"
         v-show="isEdit"
         >
           更改
@@ -277,7 +277,6 @@ export default {
   created() {
     if (this.isEdit) {
       const id = this.f_id;
-      console.log(id+" created");
       this.fetchData(id)
     }
 
@@ -353,21 +352,14 @@ export default {
       
       
     },
-    updateForm(f_id) {
+    updateForm() {
 
-      console.log(this.postForm)
+      
       this.postForm.id = this.f_id
-      console.log(this.postForm.id)
-      console.log(this.postForm.projectId+"hhhh")
       const postData =qs.stringify(this.postForm) 
-      console.log(postData+"post")
       updateBalance(postData).then((response) =>{
-        console.log(response.data)
-        console.log(response.list)
        
-         
       })
-      console.log("修改请求")
       this.$refs.postForm.validate(valid => {
         if (valid) {
           this.loading = true
@@ -387,22 +379,7 @@ export default {
       
       
     },
-    draftForm() {
-      if (this.postForm.body.length === 0 || this.postForm.title.length === 0) {
-        this.$message({
-          message: '请填写必要的标题和内容',
-          type: 'warning'
-        })
-        return
-      }
-      this.$message({
-        message: '保存成功',
-        type: 'success',
-        showClose: true,
-        duration: 1000
-      })
-      this.postForm.status = 'draft'
-    },
+    
     getRemoteUserList(query) {
       searchUser(query).then(response => {
         if (!response.data.items) return

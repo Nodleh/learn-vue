@@ -4,11 +4,11 @@
 </template>
 
 <script>
-import MedicineDetail from './components/BalanceDetail'
+import BalanceDetail from './components/BalanceDetail'
 
 export default {
   name: 'CreateBalance',
-  components: { MedicineDetail }
+  components: { BalanceDetail }
 }
 </script>
 
