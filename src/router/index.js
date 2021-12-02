@@ -188,12 +188,12 @@ export const asyncRoutes = [
           name: 'fenci',
           meta: { title: '分词详情', icon: 'tab' }
         },
-        {
+       {
           path: 'news',
           component: () =>
             import ('@/views/medicine/news'),
           name: 'news',
-          meta: { title: '资讯详情', icon: 'list' }
+      //    meta: { title: '资讯详情', icon: 'list' }
         }
         ]
       },
