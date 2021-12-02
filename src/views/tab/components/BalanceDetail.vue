@@ -190,7 +190,7 @@ export default {
       userListOptions: [],
       rules: {
         date: [{ validator: validateRequire }],
-        //projectId: [{ validator: validateRequire }],
+        projectId: [{ validator: validateRequire }],
         revenue: [{ validator: validateRequire }],
         master: [{ validator: validateRequire }]
       },
