@@ -172,13 +172,38 @@ export const asyncRoutes = [
 
         ]
     },
+    {
+        path: '/medicine',
+        component: Layout,
+        redirect: '/medicine/fenci',
+        name: 'medicine',
+        meta: {
+            title: '药品清单',
+            icon: 'el-icon-s-help'
+        },
+        children: [{
+                path: 'fenci',
+                component: () =>
+                    import ('@/views/medicine/fenci'),
+                name: 'fenci',
+                meta: { title: '分词详情', icon: 'tab' }
+            },
+            {
+                path: 'news',
+                component: () =>
+                    import ('@/views/medicine/news'),
+                name: 'news',
+                //meta: { title: '资讯详情', icon: 'list' }
+            }
+        ]
+    },
 
     // 404 page must be placed at the end !!!
     { path: '*', redirect: '/404', hidden: true }
 ]
 
 const createRouter = () => new Router({
-    // mode: 'history', // require service support
+    mode: 'history', // require service support
     scrollBehavior: () => ({ y: 0 }),
     routes: constantRoutes
 })

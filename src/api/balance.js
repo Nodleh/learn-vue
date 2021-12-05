@@ -13,6 +13,20 @@ export function queryByDate(index, max, date) {
         params: { index, max, date }
     })
 }
+export function queryInList(index, max, date) {
+    return request({
+        url: '/balance/in/list',
+        method: 'get',
+        params: { index, max, date }
+    })
+}
+export function queryOutList(index, max, date) {
+    return request({
+        url: '/balance/out/list',
+        method: 'get',
+        params: { index, max, date }
+    })
+}
 export function createBalance(data) {
     return request({
         url: '/balance/add',

@@ -21,7 +21,7 @@
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="24"  >
+                <el-col :span="24"  v-show="!isEdit">
                   <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectId">
                      <el-select v-model="postForm.projectId" placeholder="请选择项目名称">
                         <el-option v-for="(item, index) in options"
@@ -33,10 +33,10 @@
                   </el-form-item>
                 </el-col>
                 </el-row>
-                <el-row>
-                <!-- <el-col :span="24" v-show="isEdit">
-                  <el-form-item label-width="90px" label="项目Id:" class="postInfo-container-item"  >
-                     <el-select v-model="postForm.projectName"  @change="change">
+               <el-row>
+                <el-col :span="24"  v-show="isEdit">
+                  <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectName">
+                     <el-select v-model="postForm.projectName" @change="change">
                         <el-option v-for="(item, index) in options"
                               :key="index"
                               :value="item.value"
@@ -44,7 +44,7 @@
                         </el-option>
                     </el-select>
                   </el-form-item>
-                </el-col> -->
+                </el-col>
                 </el-row>
                 <el-row>
                 <el-col :span="24">
@@ -72,7 +72,7 @@
                 </el-col>
                 </el-row>
                <el-row>
-                <el-col :span="24" v-show="!isEdit">
+                <el-col :span="24" >
                   <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" prop="balanceType">
                      <el-select v-model="postForm.balanceType">
                         <el-option v-for="(item, index) in type"
@@ -84,13 +84,13 @@
                   </el-form-item>
                 </el-col>
                 </el-row>
-                <el-row>
+                <!-- <el-row>
                 <el-col :span="24" v-show="isEdit">
                   <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" >
                      <el-input v-model="postForm.balanceType"   placeholder="类型"></el-input>
                   </el-form-item>
                 </el-col>
-                </el-row>
+                </el-row> -->
               </el-row>
             </div>
           </el-col>
@@ -102,7 +102,7 @@
           添加
         </el-button>
         <el-button v-loading="loading" style="margin-left: 140px;" type="success" 
-        @click="updateForm"
+        @click="updateForm()"
         v-show="isEdit"
         >
           更改
@@ -190,7 +190,7 @@ export default {
       userListOptions: [],
       rules: {
         date: [{ validator: validateRequire }],
-        //projectId: [{ validator: validateRequire }],
+        projectId: [{ validator: validateRequire }],
         revenue: [{ validator: validateRequire }],
         master: [{ validator: validateRequire }]
       },
@@ -205,7 +205,8 @@ export default {
         value: 0
       }
       ],
-      options:[{ 
+      
+        options:[{ 
             label: '销货收入',
             value: 1
        },
@@ -277,7 +278,6 @@ export default {
   created() {
     if (this.isEdit) {
       const id = this.f_id;
-      console.log(id+" created");
       this.fetchData(id)
     }
 
@@ -285,11 +285,12 @@ export default {
     // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
     // https://github.com/PanJiaChen/vue-element-admin/issues/1221
     this.tempRoute = Object.assign({}, this.$route)
+    
   },
   methods: {
     change(v_id){
       let obj = {};
-    obj = this.options.find((item)=>{ 
+      obj = this.options.find((item)=>{ 
        return item.value === v_id;//筛选出匹配数据
      });
      console.log(obj); //obj即是选中的Option数据集合
@@ -297,6 +298,16 @@ export default {
      
        this.postForm.projectId = obj.value;
        console.log("change")
+       //console.log(this.postForm.projectId )
+    },
+    getDefaultId(){
+      var obj = this.options.find((item)=>{ 
+       return item.label === this.postForm.projectName;//筛选出匹配数据
+     });
+     console.log(obj); //obj即是选中的Option数据集合
+     //获取到选中的Option数据集并进行其它操作
+     
+       this.postForm.projectId = obj.value;
        //console.log(this.postForm.projectId )
     },
     fetchData(id) {
@@ -333,7 +344,6 @@ export default {
         console.log(response.data)
         console.log(response.list)
       })
-      console.log("请求")
       this.$refs.postForm.validate(valid => {
         if (valid) {
           this.loading = true
@@ -353,56 +363,24 @@ export default {
       
       
     },
-    updateForm(f_id) {
+    updateForm() {
 
-      console.log(this.postForm)
+      
       this.postForm.id = this.f_id
-      console.log(this.postForm.id)
-      console.log(this.postForm.projectId+"hhhh")
       const postData =qs.stringify(this.postForm) 
-      console.log(postData+"post")
       updateBalance(postData).then((response) =>{
-        console.log(response.data)
-        console.log(response.list)
        
-         
       })
-      console.log("修改请求")
-      this.$refs.postForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$notify({
+       this.$notify({
             title: '成功',
             message: '修改账单成功',
             type: 'success',
             duration: 2000
           })
           
-          this.loading = false
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-      
       
     },
-    draftForm() {
-      if (this.postForm.body.length === 0 || this.postForm.title.length === 0) {
-        this.$message({
-          message: '请填写必要的标题和内容',
-          type: 'warning'
-        })
-        return
-      }
-      this.$message({
-        message: '保存成功',
-        type: 'success',
-        showClose: true,
-        duration: 1000
-      })
-      this.postForm.status = 'draft'
-    },
+    
     getRemoteUserList(query) {
       searchUser(query).then(response => {
         if (!response.data.items) return
