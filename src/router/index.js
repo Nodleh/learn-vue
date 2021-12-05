@@ -182,6 +182,7 @@ export const asyncRoutes = [
             icon: 'el-icon-s-help'
         },
         children: [{
+<<<<<<< HEAD
                 path: 'fenci',
                 component: () =>
                     import ('@/views/medicine/fenci'),
@@ -195,6 +196,21 @@ export const asyncRoutes = [
                 name: 'news',
                 //meta: { title: '资讯详情', icon: 'list' }
             }
+=======
+          path: 'fenci',
+          component: () =>
+            import ('@/views/medicine/fenci'),
+          name: 'fenci',
+          meta: { title: '分词详情', icon: 'tab' }
+        },
+       {
+          path: 'news',
+          component: () =>
+            import ('@/views/medicine/news'),
+          name: 'news',
+      //    meta: { title: '资讯详情', icon: 'list' }
+        }
+>>>>>>> dcfe353 (修复中)
         ]
     },
 
