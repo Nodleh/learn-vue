@@ -21,7 +21,7 @@
                 </el-col>
                 </el-row>
                 <el-row>
-                <el-col :span="24"  >
+                <el-col :span="24"  v-show="!isEdit">
                   <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectId">
                      <el-select v-model="postForm.projectId" placeholder="请选择项目名称">
                         <el-option v-for="(item, index) in options"
@@ -33,10 +33,10 @@
                   </el-form-item>
                 </el-col>
                 </el-row>
-                <!-- <el-row>
-                <el-col :span="24" v-show="isEdit">
-                  <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item"  >
-                     <el-select v-model="postForm.projectName"  @change="change">
+               <el-row>
+                <el-col :span="24"  v-show="isEdit">
+                  <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectName">
+                     <el-select v-model="postForm.projectName" @change="change">
                         <el-option v-for="(item, index) in options"
                               :key="index"
                               :value="item.value"
@@ -45,7 +45,7 @@
                     </el-select>
                   </el-form-item>
                 </el-col>
-                </el-row> -->
+                </el-row>
                 <el-row>
                 <el-col :span="24">
                   <el-form-item label-width="90px" label="收入/支出:" class="postInfo-container-item"
@@ -205,7 +205,8 @@ export default {
         value: 0
       }
       ],
-      options:[{ 
+      
+        options:[{ 
             label: '销货收入',
             value: 1
        },
@@ -284,11 +285,12 @@ export default {
     // Because if you enter this page and quickly switch tag, may be in the execution of the setTagsViewTitle function, this.$route is no longer pointing to the current page
     // https://github.com/PanJiaChen/vue-element-admin/issues/1221
     this.tempRoute = Object.assign({}, this.$route)
+    
   },
   methods: {
     change(v_id){
       let obj = {};
-    obj = this.options.find((item)=>{ 
+      obj = this.options.find((item)=>{ 
        return item.value === v_id;//筛选出匹配数据
      });
      console.log(obj); //obj即是选中的Option数据集合
@@ -296,6 +298,16 @@ export default {
      
        this.postForm.projectId = obj.value;
        console.log("change")
+       //console.log(this.postForm.projectId )
+    },
+    getDefaultId(){
+      var obj = this.options.find((item)=>{ 
+       return item.label === this.postForm.projectName;//筛选出匹配数据
+     });
+     console.log(obj); //obj即是选中的Option数据集合
+     //获取到选中的Option数据集并进行其它操作
+     
+       this.postForm.projectId = obj.value;
        //console.log(this.postForm.projectId )
     },
     fetchData(id) {
@@ -332,7 +344,6 @@ export default {
         console.log(response.data)
         console.log(response.list)
       })
-      console.log("请求")
       this.$refs.postForm.validate(valid => {
         if (valid) {
           this.loading = true
@@ -360,23 +371,13 @@ export default {
       updateBalance(postData).then((response) =>{
        
       })
-      this.$refs.postForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$notify({
+       this.$notify({
             title: '成功',
             message: '修改账单成功',
             type: 'success',
             duration: 2000
           })
           
-          this.loading = false
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-      
       
     },
     

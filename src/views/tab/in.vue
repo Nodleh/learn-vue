@@ -80,7 +80,7 @@
       <el-table-column align="center" label="操作" width="250">
         <template slot-scope="scope">
           <!-- <router-link :to="'/tab/edit/' + scope.row.id"> -->
-            <el-button type="primary" size="small" icon="el-icon-edit" @click="edit(scope.row.id) ">
+            <el-button type="primary" size="small" icon="el-icon-edit" @click="edit(scope.row.id)">
               编辑
             </el-button>
             
