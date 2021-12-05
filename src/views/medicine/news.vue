@@ -31,9 +31,9 @@
 
       <el-table-column min-width="300px" label="标题">
         <template slot-scope="{ row }">
-          <router-link :to="'/example/edit/' + row.id" class="link-type">
-            <span>{{ row.title }}</span>
-          </router-link>
+       <!--  <router-link :to=" row.sourceUrl" class="link-type">-->
+            <span  @click="See(row.sourceUrl)">{{ row.title }}</span>
+       
         </template>
       </el-table-column>
 
@@ -122,15 +122,21 @@ export default {
     this.getParams();
   },
   methods: {
+
+      See (e) {
+        window.location.href = e
+      },
+    
+    
      getParams:function(){
     // 取到路由带过来的参数
     var routerParams = this.$route.query.nameId
     // 将数据放在当前组件的数据内
-    console.log("传来的参数=="+routerParams)
+ //   console.log("传来的参数=="+routerParams)
     this.textareText = routerParams
   },
 
-    
+   
     getList() {
       this.listLoading = true;
   

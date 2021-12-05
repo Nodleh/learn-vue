@@ -219,7 +219,11 @@ export const asyncRoutes = [
 ]
 
 const createRouter = () => new Router({
+<<<<<<< HEAD
     mode: 'history', // require service support
+=======
+     mode: 'history', // require service support
+>>>>>>> 4f0879b (跳转外部链接)
     scrollBehavior: () => ({ y: 0 }),
     routes: constantRoutes
 })
