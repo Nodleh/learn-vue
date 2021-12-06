@@ -130,7 +130,7 @@ export default {
      getParams:function(){
     // 取到路由带过来的参数
     var routerParams = this.$route.query.nameId
-    // 将数据放在当前组件的数据内
+ 
  //   console.log("传来的参数=="+routerParams)
     this.textareText = routerParams
   },
