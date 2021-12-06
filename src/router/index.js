@@ -193,7 +193,7 @@ export const asyncRoutes = [
                 component: () =>
                     import ('@/views/medicine/news'),
                 name: 'news',
-                //meta: { title: '资讯详情', icon: 'list' }
+                //    meta: { title: '资讯详情', icon: 'list' }
             }
         ]
     },
