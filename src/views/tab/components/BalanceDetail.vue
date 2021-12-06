@@ -35,8 +35,8 @@
                 </el-row>
                <el-row>
                 <el-col :span="24"  v-show="isEdit">
-                  <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectName">
-                     <el-select v-model="postForm.projectName" @change="change">
+                  <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectId">
+                     <el-select v-model="postForm.projectId" placeholder="请选择项目名称">
                         <el-option v-for="(item, index) in options"
                               :key="index"
                               :value="item.value"
