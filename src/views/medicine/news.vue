@@ -174,7 +174,7 @@ export default {
     //sort
     sortChange(column){
         this.current_page = 1;
-        console.log(column.order);
+    //    console.log(column.order);
         if(column.order == 'descending'){
           this.list.sort((a,b)=> b[this.column.prop]-a[this.column.prop])
         }else if(column.order == 'ascending'){
