@@ -22,7 +22,7 @@
                 </el-row>
                 <el-row>
                 <el-col :span="24"  v-show="!isEdit">
-                  <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectId">
+                  <el-form-item label-width="90px" label="摘要:" class="postInfo-container-item" prop="projectId">
                      <el-select v-model="postForm.projectId" placeholder="请选择项目名称">
                         <el-option v-for="(item, index) in options"
                               :key="index"
@@ -35,7 +35,7 @@
                 </el-row>
                <el-row>
                 <el-col :span="24"  v-show="isEdit">
-                  <el-form-item label-width="90px" label="项目名称:" class="postInfo-container-item" prop="projectId">
+                  <el-form-item label-width="90px" label="摘要:" class="postInfo-container-item" prop="projectId">
                      <el-select v-model="postForm.projectId" placeholder="请选择项目名称">
                         <el-option v-for="(item, index) in options"
                               :key="index"
@@ -46,6 +46,20 @@
                   </el-form-item>
                 </el-col>
                 </el-row>
+                <el-row>
+                <el-col :span="24" >
+                  <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" prop="balanceType">
+                     <el-select v-model="postForm.balanceType">
+                        <el-option v-for="(item, index) in type"
+                              :key="index"
+                              :value="item.value"
+                              :label="item.label">
+                        </el-option>
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                </el-row>
+              </el-row>
                 <el-row>
                 <el-col :span="24">
                   <el-form-item label-width="90px" label="收入/支出:" class="postInfo-container-item"
@@ -71,27 +85,7 @@
                   </el-form-item>
                 </el-col>
                 </el-row>
-               <el-row>
-                <el-col :span="24" >
-                  <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" prop="balanceType">
-                     <el-select v-model="postForm.balanceType">
-                        <el-option v-for="(item, index) in type"
-                              :key="index"
-                              :value="item.value"
-                              :label="item.label">
-                        </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                </el-row>
-                <!-- <el-row>
-                <el-col :span="24" v-show="isEdit">
-                  <el-form-item label-width="90px" label="类型:" class="postInfo-container-item" >
-                     <el-input v-model="postForm.balanceType"   placeholder="类型"></el-input>
-                  </el-form-item>
-                </el-col>
-                </el-row> -->
-              </el-row>
+               
             </div>
           </el-col>
         </el-row>
@@ -371,12 +365,22 @@ export default {
       updateBalance(postData).then((response) =>{
        
       })
-       this.$notify({
+       this.$refs.postForm.validate(valid => {
+        if (valid) {
+          this.loading = true
+          this.$notify({
             title: '成功',
             message: '修改账单成功',
             type: 'success',
             duration: 2000
           })
+          
+          this.loading = false
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
           
       
     },

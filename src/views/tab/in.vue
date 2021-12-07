@@ -9,6 +9,7 @@
       placeholder="选择日期"></el-date-picker>
       <el-radio v-model="radio" label=1>收入</el-radio>
       <el-radio v-model="radio" label=2>支出</el-radio>
+      <el-radio v-model="radio" label=3>收支</el-radio>
       <el-button v-waves class="filter-item"  style="margin-left: 10px;"  type="primary" icon="el-icon-search" @click="by_id?search_id():search_date()">
         查询
       </el-button>
@@ -42,9 +43,14 @@
           <span>{{ row.date | parseTime('{y}-{m}-{d} ') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="项目名称" min-width="20px">
+      <el-table-column label="摘要" min-width="20px">
         <template slot-scope="{row}">
           <span>{{ row.projectName }}</span>
+        </template>
+      </el-table-column>
+       <el-table-column label="类型" width="110px" align="center">
+        <template slot-scope="{row}">
+          <el-tag :type="row.balanceType | statusFilter">{{ row.balanceType }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="当日收入/支出" width="110px" align="center" v-if="this.display_all">
@@ -72,11 +78,7 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="类型" width="110px" align="center">
-        <template slot-scope="{row}">
-          <el-tag :type="row.balanceType | statusFilter">{{ row.balanceType }}</el-tag>
-        </template>
-      </el-table-column>
+     
       <el-table-column align="center" label="操作" width="250">
         <template slot-scope="scope">
           <!-- <router-link :to="'/tab/edit/' + scope.row.id"> -->
@@ -93,8 +95,8 @@
         <edit :f_id="f_id"></edit>
     </el-dialog>
     
-    <p v-show="compute && !by_id  && this.display_in">总收入:{{total_in}}</p>
-    <p v-show="compute && !by_id  && this.display_out">总支出:{{total_out}}</p>
+    <p v-show="this.display_in">总收入:{{total_in}}</p>
+    <p v-show="this.display_out">总支出:{{total_out}}</p>
     <pagination
       v-show="total > 0"
       :total="total"
@@ -148,7 +150,6 @@ export default {
       display_in:false,
       display_out:false,
       display_all:true,
-      compute:false,
       value1:new Date,
       dialogTableVisible1:false,
       dialogTableVisible2:false,
@@ -161,14 +162,6 @@ export default {
   },
   
   computed: {
-      by_id(){
-        if(this.query.id && !this.value1)
-         return  true;
-        else
-         return  false;
-
-      },
-      
      
 
   },
@@ -209,7 +202,6 @@ export default {
        const index = _this.listQuery.index;
        const max = _this.listQuery.max;
        const date = this.value1;
-       _this.compute = true;
        _this.listLoading = true;
        _this.total_in = 0;
        _this.total_out = 0;
@@ -231,8 +223,6 @@ export default {
         this.display_in = true;
         this.display_all = false;
         _this.listLoading = false;
-       
-        this.radio = 0;
          })
        }
        else if(this.radio == 2){
@@ -251,7 +241,6 @@ export default {
         _this.listLoading = false;
         this.display_out = true;
         this.display_all = false;
-        this.radio = 0;
          })
        }
        else{
