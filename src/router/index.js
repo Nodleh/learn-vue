@@ -165,6 +165,7 @@ export const constantRoutes = [{
             icon: 'el-icon-s-help'
         },
         children: [{
+<<<<<<< HEAD
                 path: 'fenci',
                 component: () =>
                     import ('@/views/medicine/fenci'),
@@ -178,6 +179,21 @@ export const constantRoutes = [{
                 name: 'news',
                 //    meta: { title: '资讯详情', icon: 'list' }
             }
+=======
+          path: 'fenci',
+          component: () =>
+            import ('@/views/medicine/fenci'),
+          name: 'fenci',
+          meta: { title: '分词详情', icon: 'tab' }
+        },
+       {
+          path: 'news',
+          component: () =>
+            import ('@/views/medicine/news'),
+          name: 'news',
+      //    meta: { title: '资讯详情', icon: 'list' }
+        }
+>>>>>>> 4f0879b90b74f9854225f3d1a95fc1df49859d8d
         ]
     },
 
@@ -204,7 +220,11 @@ export const asyncRoutes = [
 ]
 
 const createRouter = () => new Router({
+<<<<<<< HEAD
     mode: 'history', // require service support
+=======
+     mode: 'history', // require service support
+>>>>>>> 4f0879b90b74f9854225f3d1a95fc1df49859d8d
     scrollBehavior: () => ({ y: 0 }),
     routes: constantRoutes
 })
