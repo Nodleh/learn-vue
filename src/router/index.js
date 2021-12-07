@@ -84,6 +84,7 @@ export const constantRoutes = [{
             meta: { title: 'Dashboard', icon: 'dashboard', affix: true }
         }]
     },
+
     {
         path: '/article',
         component: Layout,
@@ -199,7 +200,6 @@ export const asyncRoutes = [
     // chartsRouter,
     // nestedRouter,
     // tableRouter,
-
 
 ]
 
