@@ -2,24 +2,36 @@
   <div class="app-container">
     <div class="filter-container">
       <!-- <el-input v-model="query.id" placeholder="id" style="width: 200px; margin-left: 10px; margin-top: 10px;"></el-input> -->
-      <el-date-picker style="width: 200px; margin-left: 10px; margin-top: 10px;"
+      <!-- <el-date-picker style="width: 200px; margin-left: 10px; margin-top: 10px;"
       v-model="value1"
       type="date"
       value-format="yyyy-MM-dd"
-      placeholder="选择日期"></el-date-picker>
+      placeholder="选择日期"></el-date-picker> -->
+      <el-date-picker
+      v-model="value1"
+      type="daterange"
+      value-format="yyyy-MM-dd"
+      align="right"
+      unlink-panels
+      range-separator="至"
+      start-placeholder="开始日期"
+      end-placeholder="结束日期">
+    </el-date-picker>
       <el-radio v-model="radio" label=1>收入</el-radio>
       <el-radio v-model="radio" label=2>支出</el-radio>
       <el-radio v-model="radio" label=3>收支</el-radio>
-      <el-button v-waves class="filter-item"  style="margin-left: 10px;"  type="primary" icon="el-icon-search" @click="by_id?search_id():search_date()">
+      <el-button v-waves class="filter-item"  style="margin-left: 10px;"  type="primary" icon="el-icon-search" @click="search_date()">
         查询
       </el-button>
        <!-- <router-link :to="'/tab/create/' "> -->
-          <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click = "add()">
+      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click = "add()">
                 添加
-          </el-button>
-            <el-dialog title="新增" :visible.sync="dialogTableVisible2" center :append-to-body='true' :lock-scroll="false" width="30%">
-               <create ></create>
-             </el-dialog>
+      </el-button>
+      <span style="margin-left: 10px;" v-show="this.display_in">总收入:{{total_in}}</span>
+      <span style="margin-left: 10px;" v-show="this.display_out">总支出:{{total_out}}</span>
+      <el-dialog title="新增" :visible.sync="dialogTableVisible2" center :append-to-body='true' :lock-scroll="false" width="30%">
+          <create ></create>
+      </el-dialog>
        <!-- </router-link> -->
     </div>
 
@@ -95,8 +107,7 @@
         <edit :f_id="f_id"></edit>
     </el-dialog>
     
-    <p v-show="this.display_in">总收入:{{total_in}}</p>
-    <p v-show="this.display_out">总支出:{{total_out}}</p>
+    
     <pagination
       v-show="total > 0"
       :total="total"
@@ -114,7 +125,7 @@ import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import edit from './edit'
 import create from './create'
-
+import moment from 'moment'
 
 export default {
   name: 'ComplexTable',
@@ -150,7 +161,9 @@ export default {
       display_in:false,
       display_out:false,
       display_all:true,
-      value1:new Date,
+      value1:[],
+      start:null,
+      end:null,
       dialogTableVisible1:false,
       dialogTableVisible2:false,
       downloadLoading: false
@@ -158,11 +171,32 @@ export default {
   },
   created() {
     this.search_date()
-    
+    // this.value1[0] = new Date
+    // this.value1[1] = new Date
+    this.value1[0] = moment(new Date()).format('yyyy-MM-DD')
+    this.value1[1] = moment(new Date()).format('yyyy-MM-DD')
+    console.log(this.value1[0])
+    this.start = this.value1[0]
+    this.end = this.value1[1]
+    console.log(this.start)
   },
   
   computed: {
      
+
+  },
+  watch:{
+    value1(newValue,oldValue){
+      console.log(oldValue,newValue)
+      if(newValue !== oldValue){
+        this.start = newValue[0];
+        this.end = newValue[1];
+      }
+      else{
+         //console.log(this.value1);
+      }
+
+    }
 
   },
   methods: {
@@ -201,16 +235,17 @@ export default {
        const _this = this;
        const index = _this.listQuery.index;
        const max = _this.listQuery.max;
-       const date = this.value1;
+       const start = this.start;
+       const end = this.end;
        _this.listLoading = true;
        _this.total_in = 0;
        _this.total_out = 0;
        
        if(this.radio == 1){
-          getSum(date).then(response=>{
+          getSum(start,end).then(response=>{
           _this.total_in = response.data
         })
-         queryInList(index,max,date).then(response => {
+         queryInList(index,max,start,end).then(response => {
            
            _this.list = response.data.list;
            
@@ -226,10 +261,10 @@ export default {
          })
        }
        else if(this.radio == 2){
-         getOut(date).then(response=>{
+         getOut(start,end).then(response=>{
           _this.total_out = response.data
         })
-         queryOutList(index,max,date).then(response => {
+         queryOutList(index,max,start,end).then(response => {
            
            _this.list = response.data.list;
          for(let n of _this.list){
@@ -244,7 +279,7 @@ export default {
          })
        }
        else{
-       queryByDate(index,max,date).then(response=>{
+       queryByDate(index,max,start,end).then(response=>{
          _this.list = response.data.list;
          for(let n of _this.list){
               if(n.balanceType == 1){

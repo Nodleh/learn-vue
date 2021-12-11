@@ -6,25 +6,25 @@ export function queryById(id) {
         params: { id }
     })
 }
-export function queryByDate(index, max, date) {
+export function queryByDate(index, max, start, end) {
     return request({
         url: '/balance/sum/list',
         method: 'get',
-        params: { index, max, date }
+        params: { index, max, start, end }
     })
 }
-export function queryInList(index, max, date) {
+export function queryInList(index, max, start, end) {
     return request({
         url: '/balance/in/list',
         method: 'get',
-        params: { index, max, date }
+        params: { index, max, start, end }
     })
 }
-export function queryOutList(index, max, date) {
+export function queryOutList(index, max, start, end) {
     return request({
         url: '/balance/out/list',
         method: 'get',
-        params: { index, max, date }
+        params: { index, max, start, end }
     })
 }
 export function createBalance(data) {
@@ -67,17 +67,17 @@ export function deleteBalance(id) {
     })
 
 }
-export function getSum(date) {
+export function getSum(start, end) {
     return request({
         url: '/balance/in',
         method: 'get',
-        params: { date }
+        params: { start, end }
     })
 }
-export function getOut(date) {
+export function getOut(start, end) {
     return request({
         url: '/balance/out',
         method: 'get',
-        params: { date }
+        params: { start, end }
     })
 }
